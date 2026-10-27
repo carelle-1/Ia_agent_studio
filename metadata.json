@@ -1,0 +1,6 @@
+{
+  "name": "Meta Colab",
+  "description": "Plateforme SaaS tout-en-un d'agents IA autonomes pour la gestion, la création et la publication automatisée sur Facebook et Instagram avec validation humaine obligatoire.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

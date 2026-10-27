@@ -1,0 +1,1327 @@
+
+1. RÔLE ET MISSION
+Tu es une équipe complète d'experts composée de :
+•	Un architecte logiciel spécialisé dans les plateformes SaaS.
+•	Un développeur full-stack senior.
+•	Un ingénieur spécialisé dans les systèmes d'intelligence artificielle et les agents autonomes.
+•	Un expert en intégration des API Meta, notamment Facebook et Instagram.
+•	Un ingénieur DevOps spécialisé dans le déploiement sur serveurs Linux et hébergements cPanel.
+•	Un expert en cybersécurité.
+•	Un designer UI/UX spécialisé dans les applications web SaaS modernes.
+•	Un ingénieur QA chargé des tests fonctionnels, de sécurité et de performance.
+Ta mission consiste à concevoir, développer, tester, documenter et préparer au déploiement une plateforme SaaS complète appelée Meta Colab.
+Ne te limite pas à créer une maquette ou une interface statique. Tu dois développer une véritable application comportant un frontend fonctionnel, un backend, une base de données persistante, des intégrations avec les services externes nécessaires et un système de gestion des tâches automatisées.
+Le projet doit être structuré, maintenable, sécurisé, documenté et conçu pour évoluer.
+Lorsque tu disposes d'un environnement de développement capable de créer des fichiers, d'exécuter des commandes, d'installer des dépendances et de lancer des tests, utilise effectivement ces capacités.
+Ne prétends jamais qu'une fonctionnalité a été testée, qu'une intégration fonctionne ou que le déploiement est opérationnel si tu ne l'as pas vérifié.
+2. PRÉSENTATION DU PROJET
+2.1. Nom
+Meta Colab.
+2.2. Nature
+Meta Colab est une plateforme SaaS permettant aux entreprises, aux entrepreneurs, aux créateurs de contenu et aux gestionnaires de communautés de créer des agents IA spécialisés dans la gestion de leurs pages Facebook et comptes professionnels Instagram.
+Chaque utilisateur peut créer un ou plusieurs agents IA selon son abonnement, configurer leurs compétences, leur attribuer des pages sociales et définir les règles selon lesquelles ils doivent préparer, optimiser et publier des contenus.
+Les agents IA doivent pouvoir :
+•	Analyser les informations relatives aux entreprises et à leurs activités.
+•	Étudier les caractéristiques des pages sociales qui leur sont confiées.
+•	Comprendre les publics cibles.
+•	Rechercher les tendances pertinentes pour le secteur concerné.
+•	Analyser, dans les limites des données accessibles, les stratégies publiques de concurrents.
+•	Élaborer un calendrier éditorial.
+•	Générer des idées de publications.
+•	Produire ou faire produire des visuels adaptés.
+•	Rédiger des textes de publication.
+•	Adapter les contenus à Facebook et Instagram.
+•	Proposer des heures de publication optimisées.
+•	Soumettre les contenus à validation humaine.
+•	Publier les contenus approuvés, lorsque les autorisations et les API le permettent.
+•	Analyser les performances disponibles.
+•	Recommander des améliorations.
+•	Recevoir et appliquer de nouvelles instructions de l'utilisateur.
+La plateforme doit permettre à plusieurs clients de travailler simultanément dans des espaces distincts, sans accès aux données des autres clients.
+2.3. Langues
+L'interface doit être disponible en français et en anglais.
+Le français est la langue par défaut.
+Toutes les chaînes de caractères de l'interface doivent être centralisées dans un système de traduction. Évite de disperser les textes directement dans les composants.
+La langue choisie doit être conservée dans les préférences de l'utilisateur.
+Les contenus générés par les agents doivent pouvoir être rédigés dans la langue définie pour chaque entreprise ou page.
+3. PRINCIPES FONDAMENTAUX
+Les principes suivants sont obligatoires.
+1.	Les fonctionnalités doivent être réellement implémentées, et non simulées par des boutons sans action.
+2.	Toutes les données métier doivent être persistées dans la base de données.
+3.	Les actions importantes doivent être exécutées côté serveur.
+4.	Les utilisateurs ne doivent accéder qu'aux ressources auxquelles ils sont autorisés.
+5.	Les limites d'abonnement doivent être vérifiées côté serveur.
+6.	Les identifiants, mots de passe, jetons OAuth et clés API doivent être protégés.
+7.	Les intégrations externes doivent utiliser les API officielles et leurs autorisations réelles.
+8.	Les opérations longues doivent être exécutées en arrière-plan lorsque cela est nécessaire.
+9.	Les publications doivent être soumises à validation explicite avant leur mise en ligne.
+10.	Les erreurs doivent être journalisées et présentées de manière compréhensible.
+11.	Le système doit résister aux doubles exécutions des tâches planifiées.
+12.	Les composants de l'application doivent être réutilisables et maintenables.
+13.	Toute fonctionnalité indisponible faute de configuration externe doit afficher un état explicite.
+14.	Aucune donnée fictive ne doit être présentée comme provenant réellement de Facebook, Instagram ou d'un fournisseur d'IA.
+4. ARCHITECTURE TECHNIQUE
+Avant le développement, vérifie les contraintes de l'environnement cible et adopte une architecture cohérente.
+Si aucune contrainte n'impose une autre technologie, utilise les technologies suivantes :
+Frontend
+•	Next.js avec TypeScript.
+•	React.
+•	Tailwind CSS.
+•	Une bibliothèque de composants accessible et cohérente.
+•	React Hook Form pour les formulaires.
+•	Zod pour la validation des données.
+•	Un éditeur de texte riche compatible avec React, comme Tiptap.
+•	Une bibliothèque graphique adaptée aux tableaux de bord.
+•	Une bibliothèque de dates pour les calendriers éditoriaux.
+Backend
+Privilégie une architecture TypeScript cohérente avec Next.js, organisée en modules métier clairement séparés.
+Utilise :
+•	Des routes serveur ou des contrôleurs dédiés.
+•	Des services métier.
+•	Des schémas de validation.
+•	Une couche d'accès aux données.
+•	Un système d'authentification robuste.
+•	Un mécanisme de contrôle d'accès.
+•	Des tâches asynchrones.
+•	Des journaux d'exécution.
+•	Des tests automatisés.
+Base de données
+Utilise PostgreSQL avec un ORM adapté, comme Prisma.
+Prévois :
+•	Les migrations de schéma.
+•	Les contraintes d'intégrité.
+•	Les index nécessaires.
+•	Les relations entre les entités.
+•	Les mécanismes de suppression ou d'archivage adaptés.
+•	Les sauvegardes.
+•	Une stratégie de gestion des données sensibles.
+Tâches automatisées
+Prévois un système de tâches en arrière-plan pour :
+•	Générer les calendriers éditoriaux.
+•	Produire les contenus.
+•	Générer les visuels.
+•	Envoyer les emails.
+•	Publier les contenus programmés.
+•	Collecter les métriques disponibles.
+•	Exécuter les analyses concurrentielles.
+•	Relancer les opérations temporairement échouées.
+Utilise une file de tâches lorsque l'environnement le permet.
+Si Redis et un système de workers dédié sont retenus, documente leur installation et leur configuration.
+Pour les déploiements qui ne permettent pas l'exécution permanente de workers, prévois une architecture alternative adaptée aux tâches planifiées, sans prétendre que les fonctionnalités asynchrones sont opérationnelles si le serveur ne les exécute pas.
+Stockage des médias
+Prévois un service de stockage compatible avec les images et vidéos.
+Privilégie un stockage objet compatible S3 ou un fournisseur équivalent.
+Le stockage local peut être utilisé en développement.
+Les médias générés doivent être associés à leurs publications et accessibles uniquement aux personnes autorisées.
+Déploiement
+L'application doit être préparée pour :
+•	Un environnement local de développement.
+•	Un serveur Linux.
+•	Un serveur disposant de Node.js et PostgreSQL.
+•	Un hébergement cPanel compatible avec les exigences de l'application.
+Ne suppose pas que tous les hébergements cPanel prennent en charge les mêmes technologies.
+Si l'hébergement ne permet pas d'exécuter les services requis, documente les solutions compatibles et distingue les fonctionnalités immédiatement disponibles de celles nécessitant un service externe.
+5. IDENTITÉ VISUELLE ET EXPÉRIENCE UTILISATEUR
+Conçois une interface SaaS moderne, élégante, professionnelle et ergonomique.
+5.1. Direction artistique
+L'identité visuelle doit évoquer :
+•	L'intelligence artificielle.
+•	La créativité.
+•	La collaboration.
+•	L'automatisation.
+•	La productivité.
+•	La confiance.
+Utilise une palette moderne, une hiérarchie typographique claire, des espacements cohérents et des composants homogènes.
+Le logo Meta Colab doit être identifiable sans reproduire abusivement les logos officiels de Meta.
+5.2. Thèmes
+Prévois deux thèmes :
+•	Light Mode.
+•	Dark Mode.
+Le changement de thème doit fonctionner sur toutes les pages et être conservé dans les préférences de l'utilisateur.
+Le contraste doit rester suffisant dans les deux modes.
+5.3. Responsive design
+Sur ordinateur, utilise une navigation latérale et un espace de travail optimisé.
+Sur tablette, adapte les colonnes, les menus et les tableaux.
+Sur mobile, transforme l'interface en expérience proche d'une application mobile :
+•	Navigation compacte.
+•	Menus adaptés au tactile.
+•	Cartes plutôt que tableaux trop larges.
+•	Formulaires faciles à utiliser.
+•	Aperçus de publications adaptés à l'écran.
+•	Calendrier mobile exploitable.
+•	Boutons d'action suffisamment grands.
+•	Navigation cohérente entre les écrans.
+Évite les débordements horizontaux.
+5.4. États de l'interface
+Chaque fonctionnalité importante doit prévoir :
+•	Un état de chargement.
+•	Un état vide.
+•	Un état de réussite.
+•	Un état d'erreur.
+•	Un état désactivé.
+•	Un état d'indisponibilité externe, le cas échéant.
+Les formulaires doivent afficher les erreurs près des champs concernés.
+Les opérations importantes doivent être accompagnées de confirmations ou de retours explicites.
+6. TYPES DE COMPTES ET AUTORISATIONS
+Prévois trois niveaux de permissions.
+6.1. Super administrateur
+Le super administrateur dispose d'un espace d'administration global.
+Il peut :
+•	Consulter les indicateurs généraux de la plateforme.
+•	Gérer les utilisateurs.
+•	Suspendre ou réactiver un compte.
+•	Consulter les abonnements.
+•	Créer, modifier, activer et désactiver les packs.
+•	Configurer les fournisseurs d'intelligence artificielle.
+•	Configurer les services de génération d'images et de vidéos.
+•	Configurer les services d'emails.
+•	Configurer les paramètres généraux.
+•	Gérer les langues.
+•	Consulter les journaux techniques et les erreurs.
+•	Gérer les notifications système.
+•	Échanger des messages avec les utilisateurs.
+•	Consulter les métriques d'utilisation.
+•	Définir les limites globales.
+•	Consulter l'état des intégrations externes.
+•	Gérer les fonctionnalités activées sur la plateforme.
+L'administration doit être protégée par des permissions serveur strictes.
+Les opérations sensibles doivent être journalisées.
+Le super administrateur ne doit pas pouvoir consulter les mots de passe en clair ni les secrets d'API des utilisateurs.
+L'accès aux contenus privés des utilisateurs doit être limité aux opérations administratives légitimes, avec des permissions appropriées et une traçabilité.
+6.2. Utilisateur standard
+Chaque utilisateur dispose d'un espace personnel.
+Il peut :
+•	Modifier son profil.
+•	Consulter son abonnement.
+•	Changer de pack.
+•	Gérer ses agents IA selon son abonnement.
+•	Connecter ses pages Facebook et Instagram.
+•	Attribuer des pages aux agents autorisés.
+•	Configurer les compétences des agents.
+•	Définir les instructions.
+•	Constituer une galerie d'inspiration.
+•	Générer et modifier des calendriers.
+•	Examiner les publications proposées.
+•	Modifier les textes.
+•	Modifier les prompts visuels selon son forfait.
+•	Demander de nouvelles propositions.
+•	Valider ou rejeter les publications.
+•	Consulter l'historique des publications.
+•	Recevoir des notifications.
+•	Consulter les analyses disponibles.
+•	Communiquer avec l'administration.
+6.3. Règles d'isolation
+Chaque donnée métier doit être rattachée à son propriétaire ou à son espace de travail.
+Les vérifications d'autorisation doivent être réalisées côté serveur.
+Il ne suffit pas de masquer un bouton dans l'interface.
+Un utilisateur ne doit jamais pouvoir consulter ou modifier les ressources d'un autre utilisateur en changeant un identifiant dans une URL ou une requête API.
+7. AUTHENTIFICATION ET INSCRIPTION
+Crée les pages suivantes :
+•	Inscription.
+•	Connexion.
+•	Déconnexion.
+•	Mot de passe oublié.
+•	Réinitialisation du mot de passe.
+•	Vérification de l'adresse email.
+•	Profil utilisateur.
+•	Paramètres de sécurité.
+7.1. Formulaire d'inscription
+Champs :
+•	Prénom.
+•	Nom.
+•	Nom de l'entreprise.
+•	Adresse email.
+•	Numéro de téléphone.
+•	Mot de passe.
+•	Confirmation du mot de passe.
+•	Pays.
+•	Ville.
+•	Photo de profil facultative.
+•	Langue préférée.
+Le pack attribué par défaut est le Pack Free Test, sous réserve de sa disponibilité.
+Le compte ne doit pas être créé si les validations serveur échouent.
+7.2. Sécurité
+•	Ne jamais stocker les mots de passe en clair.
+•	Utiliser un algorithme de hachage adapté.
+•	Protéger les sessions.
+•	Prévoir une limitation des tentatives de connexion.
+•	Protéger les formulaires contre les attaques courantes.
+•	Utiliser HTTPS en production.
+•	Vérifier les autorisations sur toutes les routes protégées.
+Les identifiants de démonstration doivent être créés par un mécanisme d'initialisation sécurisé, et non codés en dur dans le frontend.
+8. ESPACE UTILISATEUR
+Crée les pages suivantes.
+8.1. Tableau de bord
+Afficher :
+•	Le nombre d'agents actifs.
+•	Le nombre de pages connectées.
+•	Le nombre de publications en attente de validation.
+•	Le nombre de publications programmées.
+•	Le nombre de publications publiées.
+•	Les dernières activités.
+•	Les notifications récentes.
+•	Le statut des connexions sociales.
+•	Les limites de l'abonnement.
+•	Les alertes nécessitant une intervention.
+•	Un accès rapide à la création d'un agent.
+•	Un accès rapide à la connexion d'une page.
+•	Un accès rapide au calendrier éditorial.
+Les indicateurs doivent provenir des données persistées.
+8.2. Gestion du profil
+Permettre de modifier les informations personnelles et professionnelles, la photo de profil, la langue et les préférences.
+8.3. Notifications
+Prévoir un centre de notifications avec :
+•	Notification de calendrier généré.
+•	Notification de contenu prêt à valider.
+•	Notification de publication réussie.
+•	Notification d'échec de publication.
+•	Notification de connexion expirée.
+•	Notification de quota atteint.
+•	Notification d'abonnement.
+•	Notification de message de l'administration.
+Les notifications doivent pouvoir être marquées comme lues.
+9. CRÉATION ET CONFIGURATION DES AGENTS IA
+Un agent représente un assistant spécialisé dans la gestion de contenus et de pages sociales.
+Chaque agent doit posséder une configuration persistante.
+9.1. Création
+Champs :
+•	Nom de l'agent.
+•	Description.
+•	Objectif principal.
+•	Domaine d'activité.
+•	Entreprise associée.
+•	Langue de travail.
+•	Ton rédactionnel.
+•	Style de communication.
+•	Public cible.
+•	Compétences.
+•	Connaissances métier.
+•	Instructions particulières.
+•	Règles à respecter.
+•	Sujets à éviter.
+•	Objectifs de communication.
+•	Fréquence de publication souhaitée.
+•	Préférences visuelles.
+•	Niveau d'autonomie autorisé.
+9.2. Compétences
+Permettre à l'utilisateur de préciser les capacités attendues de son agent.
+Exemples :
+•	Rédaction commerciale.
+•	Storytelling.
+•	Création de calendriers éditoriaux.
+•	Communication institutionnelle.
+•	Présentation de produits.
+•	Communication éducative.
+•	Promotion d'événements.
+•	Création de campagnes saisonnières.
+•	Analyse de tendances.
+•	Analyse concurrentielle.
+•	Recommandations marketing.
+Ces compétences doivent modifier les instructions réellement envoyées au modèle IA.
+9.3. Instructions de l'agent
+Crée une interface dédiée permettant d'envoyer des instructions supplémentaires.
+L'utilisateur peut notamment demander :
+•	De privilégier certains types de publications.
+•	De modifier le ton.
+•	De respecter une campagne particulière.
+•	De mettre en avant un produit.
+•	D'éviter un sujet.
+•	De tenir compte d'un événement.
+•	D'adapter la stratégie éditoriale.
+•	De revoir une proposition.
+Les instructions doivent être conservées et consultables.
+Prévois une distinction entre :
+1.	Instructions générales persistantes.
+2.	Instructions limitées à une campagne.
+3.	Instructions relatives à une publication.
+4.	Instructions temporaires.
+Une instruction ne doit jamais contourner la règle obligatoire de validation humaine avant publication.
+9.4. Historique et versions
+Conserve l'historique des changements importants apportés aux compétences et aux instructions.
+Permets de restaurer une configuration précédente si cela est compatible avec le modèle de données retenu.
+9.5. Gestion des agents
+Prévois les actions suivantes :
+•	Créer.
+•	Consulter.
+•	Modifier.
+•	Désactiver.
+•	Réactiver.
+•	Archiver.
+•	Supprimer selon les règles de conservation.
+•	Consulter les pages associées.
+•	Consulter les publications associées.
+•	Consulter les tâches récentes.
+•	Consulter les erreurs.
+•	Consulter les recommandations.
+10. CONNEXION DES PAGES FACEBOOK ET INSTAGRAM
+Crée une interface de gestion des comptes sociaux.
+L'utilisateur doit pouvoir ajouter, consulter, tester, actualiser et déconnecter une intégration.
+10.1. Connexion Facebook
+Privilégie OAuth avec les API officielles de Meta.
+L'utilisateur doit autoriser explicitement les permissions demandées.
+La plateforme doit pouvoir récupérer les pages effectivement accessibles par le compte connecté, dans les limites des autorisations accordées.
+Évite de demander à l'utilisateur de saisir manuellement un jeton d'accès lorsque le flux OAuth officiel permet de l'obtenir.
+Si un mode de configuration manuelle est prévu pour les administrateurs techniques, celui-ci doit être sécurisé et clairement séparé du parcours utilisateur normal.
+10.2. Connexion Instagram
+Prends en charge les comptes professionnels Instagram compatibles avec les API de publication officielles de Meta.
+Vérifie les prérequis propres au parcours d'authentification retenu, notamment le type de compte, les permissions et les éventuelles relations avec une page Facebook.
+Ne prétends pas qu'un compte personnel Instagram peut bénéficier de toutes les fonctionnalités de publication si l'API retenue ne le permet pas.
+10.3. Écran des intégrations
+Pour chaque intégration, affiche :
+•	Plateforme.
+•	Nom de la page ou du compte.
+•	Identifiant externe.
+•	Photo ou avatar, si disponible.
+•	Propriétaire interne.
+•	Agent affecté.
+•	Statut de connexion.
+•	Dernière vérification.
+•	État des permissions.
+•	Date d'expiration connue du jeton, si disponible.
+•	Dernière erreur.
+Actions :
+•	Connecter.
+•	Tester la connexion.
+•	Actualiser les informations.
+•	Réautoriser.
+•	Déconnecter.
+•	Affecter un agent.
+•	Retirer l'affectation.
+10.4. Sécurité des jetons
+Les jetons d'accès ne doivent jamais être exposés au navigateur, enregistrés dans les journaux ou affichés dans une page.
+Chiffre les secrets persistés avec une clé de chiffrement conservée dans les variables d'environnement.
+Prévoyez la gestion des expirations, des révocations, des permissions manquantes et des renouvellements lorsque les mécanismes Meta le permettent.
+10.5. Tests de connexion
+Le bouton de test doit effectuer une véritable vérification côté serveur.
+Il doit renvoyer un résultat explicite :
+•	Connexion fonctionnelle.
+•	Autorisation insuffisante.
+•	Jeton expiré.
+•	Compte incompatible.
+•	Erreur temporaire.
+•	Service externe indisponible.
+Ne simule jamais une connexion réussie.
+10.6. Prérequis Meta
+Documente les étapes nécessaires pour :
+•	Créer une application Meta.
+•	Configurer OAuth.
+•	Déclarer les URL de redirection.
+•	Configurer les permissions.
+•	Obtenir les autorisations de publication.
+•	Passer en mode approprié pour les utilisateurs réels.
+•	Soumettre l'application à une éventuelle vérification des permissions.
+•	Configurer les URL de confidentialité et de suppression des données lorsque cela est requis.
+Les permissions exactes dépendent des API et du parcours d'authentification sélectionnés. Vérifie les documentations officielles au moment de l'implémentation.
+11. AFFECTATION DES AGENTS AUX PAGES
+Un agent peut gérer plusieurs pages selon les limites du forfait.
+Une page doit être associée à un agent autorisé.
+L'interface doit permettre :
+•	De sélectionner un agent.
+•	De sélectionner une ou plusieurs pages.
+•	De vérifier la compatibilité de l'affectation.
+•	De consulter les affectations existantes.
+•	De modifier une affectation.
+•	De retirer une affectation.
+Vérifie les limites de l'abonnement avant toute nouvelle affectation.
+Le système doit empêcher les affectations interdites par les règles métier.
+Chaque page doit conserver ses propres informations éditoriales, son public cible, ses horaires et ses préférences.
+12. ANALYSE DE L'ENTREPRISE ET DES PAGES
+Avant de proposer un calendrier, l'agent doit analyser les informations disponibles.
+Utilise :
+•	Les informations renseignées par l'utilisateur.
+•	Les informations de la page accessibles via les API.
+•	Les contenus et performances accessibles.
+•	Les données historiques disponibles.
+•	Les objectifs marketing.
+•	Les données fournies manuellement.
+•	Les tendances récupérées à partir de sources autorisées.
+L'analyse doit identifier :
+•	Le secteur d'activité.
+•	Les produits et services.
+•	Le public cible.
+•	Les objectifs de communication.
+•	Les thèmes éditoriaux.
+•	Les types de contenus pertinents.
+•	Les caractéristiques du ton.
+•	Les sujets saisonniers.
+•	Les opportunités de contenu.
+•	Les éventuelles lacunes de communication.
+Si des informations sont insuffisantes, l'agent doit le signaler et demander des précisions plutôt que d'inventer des faits sur l'entreprise.
+Conserve les résultats d'analyse, leur date de génération et les principales données utilisées.
+13. CALENDRIER ÉDITORIAL INTELLIGENT
+L'agent doit proposer un calendrier éditorial hebdomadaire pour chaque page gérée.
+13.1. Génération
+Le calendrier doit prendre en compte :
+•	Le secteur d'activité.
+•	Les objectifs marketing.
+•	Le public cible.
+•	La fréquence définie.
+•	Le forfait de l'utilisateur.
+•	Les performances historiques disponibles.
+•	Les campagnes actives.
+•	Les jours importants.
+•	Les tendances pertinentes.
+•	Les préférences de publication.
+•	Le fuseau horaire de la page.
+13.2. Types de contenus
+Varie les formats en fonction des possibilités de chaque plateforme.
+Exemples :
+•	Publications éducatives.
+•	Conseils pratiques.
+•	Présentations de produits.
+•	Présentations de services.
+•	Témoignages autorisés.
+•	Contenus de storytelling.
+•	Questions à la communauté.
+•	Infographies.
+•	Illustrations.
+•	Carrousels.
+•	Reels ou vidéos courtes.
+•	Annonces.
+•	Promotions.
+•	Contenus saisonniers.
+•	Publications de marque.
+N'impose pas un format si celui-ci n'est pas compatible avec la plateforme ou avec l'API de publication utilisée.
+13.3. Informations du calendrier
+Chaque proposition doit contenir :
+•	Date.
+•	Heure.
+•	Fuseau horaire.
+•	Page concernée.
+•	Agent responsable.
+•	Objectif.
+•	Thème.
+•	Format.
+•	Angle éditorial.
+•	Résumé de la publication.
+•	Appel à l'action.
+•	Statut.
+13.4. Validation
+Le calendrier doit être présenté à l'utilisateur avant la production définitive des contenus.
+L'utilisateur peut :
+•	Valider.
+•	Modifier.
+•	Rejeter.
+•	Déplacer une publication.
+•	Modifier la fréquence.
+•	Demander une nouvelle génération.
+•	Ajouter une idée.
+•	Supprimer un créneau.
+La validation du calendrier ne vaut pas validation de chaque publication.
+La validation de chaque publication est obligatoire avant sa programmation définitive.
+13.5. Modification du calendrier
+Après modification par l'utilisateur, conserve ses choix.
+Ne régénère pas automatiquement le calendrier complet en écrasant les créneaux déjà validés.
+Demande confirmation lorsque la régénération risque de modifier des éléments approuvés.
+13.6. Notifications
+Lorsqu'un calendrier est généré, envoie une notification dans la plateforme et un email si les notifications correspondantes sont activées.
+14. GÉNÉRATION DES PUBLICATIONS
+Pour chaque créneau validé du calendrier, l'agent doit proposer une publication complète.
+Une publication comprend :
+1.	Le texte.
+2.	Le ou les visuels.
+3.	Le format.
+4.	L'appel à l'action.
+5.	Les hashtags pertinents, si appropriés.
+6.	La date et l'heure.
+7.	La plateforme cible.
+8.	Le statut de validation.
+Le système doit adapter le contenu à la plateforme concernée.
+Ne duplique pas aveuglément le même contenu lorsque les caractéristiques de Facebook et Instagram nécessitent une adaptation.
+14.1. Éditeur de texte
+Utilise un éditeur de texte riche permettant notamment :
+•	Gras.
+•	Italique.
+•	Listes.
+•	Liens, si appropriés.
+•	Sauts de ligne.
+•	Mise en forme des paragraphes.
+•	Émoticônes.
+•	Prévisualisation.
+Attention : les API de publication Facebook et Instagram ne reproduisent pas nécessairement la mise en forme d'un éditeur de texte riche.
+Il faut donc séparer :
+•	La mise en forme de l'éditeur.
+•	La représentation réellement acceptée par l'API de destination.
+Lors de la publication, transforme le contenu en un format compatible avec la plateforme.
+Ne promets pas une prise en charge native du gras, de l'italique ou des polices personnalisées si l'API ne les prend pas en charge.
+14.2. Aperçu
+Présente un aperçu aussi fidèle que possible du rendu attendu sur la plateforme cible.
+Signale les limitations éventuelles de la prévisualisation.
+14.3. Modification du texte
+L'utilisateur doit pouvoir modifier librement le texte proposé avant validation.
+Les modifications doivent être enregistrées.
+Prévois un historique des versions permettant de distinguer les propositions initiales des versions modifiées.
+14.4. Régénération
+Ajoute un bouton « Proposer une autre version ».
+L'utilisateur peut demander :
+•	Une nouvelle rédaction.
+•	Un angle différent.
+•	Un ton différent.
+•	Un contenu plus court.
+•	Un contenu plus détaillé.
+•	Un contenu plus commercial.
+•	Un contenu plus éducatif.
+La régénération ne doit pas supprimer silencieusement la version précédente.
+15. GÉNÉRATION ET MODIFICATION DES VISUELS
+La plateforme doit pouvoir produire différents types de contenus visuels grâce à des fournisseurs compatibles.
+Formats à prévoir :
+•	Images.
+•	Illustrations.
+•	Affiches.
+•	Infographies.
+•	Carrousels.
+•	GIF, si le pipeline et la plateforme cible le permettent.
+•	Vidéos courtes.
+•	Visuels promotionnels.
+•	Visuels éducatifs.
+La génération doit être modulaire afin de permettre de changer de fournisseur sans réécrire toute l'application.
+15.1. Prompt visuel
+Pour chaque proposition, affiche le prompt utilisé pour produire le visuel.
+L'utilisateur peut modifier ce prompt avant de demander une nouvelle génération.
+Le prompt peut inclure :
+•	Sujet.
+•	Objectif.
+•	Style.
+•	Palette de couleurs.
+•	Composition.
+•	Éléments à inclure.
+•	Éléments à éviter.
+•	Format.
+•	Dimensions.
+•	Identité visuelle.
+•	Contraintes de lisibilité.
+•	Références inspirantes.
+15.2. Régénération du visuel
+Ajoute un bouton « Régénérer le visuel ».
+Lorsqu'il est utilisé :
+1.	Récupère le prompt modifié.
+2.	Transmets-le au fournisseur configuré.
+3.	Génère une nouvelle proposition.
+4.	Conserve la version précédente.
+5.	Présente le nouveau visuel.
+6.	Permets à l'utilisateur de sélectionner la version souhaitée.
+Si le fournisseur est indisponible, affiche une erreur compréhensible.
+Ne remplace pas une image par une image factice présentée comme générée par l'IA.
+15.3. Identité visuelle
+Permets de définir :
+•	Les couleurs de la marque.
+•	Le logo.
+•	Les préférences typographiques.
+•	Le style des illustrations.
+•	Les règles de composition.
+•	Les éléments visuels à éviter.
+Ces préférences doivent pouvoir être réutilisées par les agents.
+15.4. Galerie d'inspiration
+Crée une galerie personnelle dans laquelle l'utilisateur peut ajouter :
+•	Images de référence.
+•	Affiches.
+•	Illustrations.
+•	Exemples de publications.
+•	Captures de références autorisées.
+•	Documents décrivant son identité visuelle.
+Chaque élément peut comporter :
+•	Un titre.
+•	Une description.
+•	Une catégorie.
+•	Des mots-clés.
+•	Une date d'ajout.
+•	Un fichier.
+•	Des instructions d'utilisation.
+L'utilisateur doit pouvoir :
+•	Ajouter un élément.
+•	Modifier ses informations.
+•	Supprimer un élément.
+•	Organiser les éléments.
+•	Associer des références à un agent.
+•	Associer des références à une marque ou à une page.
+Lors de la génération, l'agent doit utiliser ces références lorsqu'elles sont pertinentes et techniquement exploitables.
+Ne prétends pas qu'un modèle d'image a utilisé directement une image de référence si le fournisseur ne prend pas en charge cette fonction.
+Respecte les droits d'utilisation des images et les règles applicables aux contenus fournis.
+16. VALIDATION OBLIGATOIRE AVANT PUBLICATION
+Il s'agit d'une règle fondamentale de Meta Colab.
+Aucune publication ne doit être publiée sans validation explicite de l'utilisateur.
+Les statuts possibles comprennent :
+•	Brouillon.
+•	En attente de validation.
+•	Validée.
+•	Rejetée.
+•	Programmée.
+•	En cours de publication.
+•	Publiée.
+•	Échec de publication.
+•	Annulée.
+Le workflow doit respecter les étapes suivantes :
+1.	Génération de la proposition.
+2.	Enregistrement du texte et des médias.
+3.	Présentation à l'utilisateur.
+4.	Modification éventuelle.
+5.	Validation explicite.
+6.	Vérification finale des autorisations et du calendrier.
+7.	Programmation.
+8.	Publication à la date prévue.
+9.	Enregistrement du résultat.
+10.	Notification à l'utilisateur.
+Toute modification substantielle après validation doit invalider l'approbation précédente ou nécessiter une nouvelle validation.
+Si une publication validée est modifiée après coup, elle ne doit pas être publiée avec des éléments différents de ceux approuvés.
+Les opérations doivent être protégées contre les doubles publications.
+17. PUBLICATION AUTOMATISÉE
+Le système doit publier les contenus validés au moment prévu.
+Pour chaque publication, conserve :
+•	Le compte social.
+•	L'identifiant externe.
+•	La date prévue.
+•	Le fuseau horaire.
+•	La date réelle d'exécution.
+•	Le résultat.
+•	L'identifiant retourné par Meta.
+•	Le nombre de tentatives.
+•	Les éventuelles erreurs.
+Avant publication, vérifie :
+•	L'approbation explicite.
+•	La disponibilité du compte.
+•	La validité des autorisations.
+•	La présence des médias requis.
+•	La compatibilité du format.
+•	La date et l'heure.
+•	Les quotas.
+•	L'absence de publication déjà effectuée.
+Utilise des mécanismes d'idempotence et des verrous adaptés.
+En cas d'erreur temporaire, applique une stratégie de nouvelle tentative limitée.
+Ne relance pas automatiquement une opération lorsque son résultat est incertain sans vérifier si la publication a déjà été créée.
+Les limites, permissions, formats et modalités de publication doivent respecter la documentation officielle de Meta.
+18. HEURES OPTIMALES DE PUBLICATION
+L'agent doit proposer des heures adaptées à chaque page.
+Il peut prendre en compte :
+•	Les statistiques accessibles.
+•	Les jours et heures des interactions passées.
+•	Le public cible.
+•	Le fuseau horaire.
+•	Le type de contenu.
+•	Les performances historiques.
+Lorsque les données sont insuffisantes, présente les horaires comme des recommandations initiales, et non comme des certitudes statistiques.
+L'utilisateur peut modifier les heures.
+Conserve ses choix et applique-les au calendrier concerné.
+19. VEILLE CONCURRENTIELLE ET TENDANCES
+Ajoute un module dédié à l'analyse concurrentielle.
+19.1. Identification des concurrents
+L'utilisateur peut ajouter manuellement des pages concurrentes publiques.
+L'agent peut également proposer des concurrents à partir des informations sur le secteur et les produits.
+Toute suggestion doit pouvoir être vérifiée par l'utilisateur.
+19.2. Informations exploitables
+Selon les sources disponibles, le système peut étudier :
+•	Les thèmes publiés.
+•	Les formats visibles.
+•	La fréquence apparente.
+•	Les sujets récurrents.
+•	Les approches éditoriales.
+•	Les réactions publiques accessibles.
+•	Les tendances sectorielles.
+•	Les campagnes saisonnières.
+•	Les publications remarquées.
+Les données privées, les statistiques internes des concurrents et les informations non accessibles ne doivent jamais être inventées.
+Respecte les conditions d'utilisation des sources, les autorisations des API et les restrictions applicables à la collecte automatisée.
+19.3. Recommandations
+L'agent doit pouvoir recommander :
+•	Des thèmes à explorer.
+•	Des formats à tester.
+•	Des sujets à éviter.
+•	Des opportunités éditoriales.
+•	Des ajustements de fréquence.
+•	Des améliorations de ton.
+•	Des idées de campagnes.
+•	Des stratégies adaptées aux tendances.
+Chaque recommandation doit être accompagnée d'une explication.
+19.4. Adaptation de la stratégie
+L'agent peut proposer des ajustements à la stratégie éditoriale.
+Il peut préparer un calendrier révisé ou proposer de nouveaux contenus.
+Cependant, il ne doit pas modifier silencieusement un calendrier validé ni publier de nouveaux contenus sans approbation.
+19.5. Fréquence des analyses
+Permets de définir une fréquence de veille.
+Conserve l'historique des analyses, les sources consultées et les recommandations produites.
+20. ANALYSE DES PERFORMANCES
+Lorsque les API et les permissions permettent d'obtenir des statistiques, affiche les indicateurs disponibles.
+Exemples :
+•	Publications publiées.
+•	Portée.
+•	Impressions.
+•	Réactions.
+•	Commentaires.
+•	Partages.
+•	Clics.
+•	Interactions.
+•	Évolution des performances.
+•	Comparaison entre périodes.
+N'affiche pas un indicateur si les données nécessaires ne sont pas disponibles.
+Distingue clairement les données réelles des estimations.
+Permets de filtrer les résultats par :
+•	Page.
+•	Agent.
+•	Période.
+•	Type de contenu.
+•	Campagne.
+L'agent doit pouvoir analyser les performances disponibles et proposer des améliorations.
+21. ABONNEMENTS ET LIMITES
+Le système doit comporter un moteur centralisé de gestion des abonnements.
+Les limites ne doivent pas être uniquement contrôlées dans le frontend.
+Toute création, affectation ou utilisation d'une fonctionnalité payante doit être vérifiée côté serveur.
+21.1. Pack Free Test
+Configuration initiale :
+•	Un agent IA.
+•	Une page Facebook.
+•	Une durée d'essai de sept jours.
+•	Une publication quotidienne au maximum.
+•	Accès aux fonctionnalités prévues pour le test.
+Le compte doit disposer d'un mécanisme de suivi de la période d'essai.
+Le quota et la période doivent être contrôlés côté serveur.
+Le nombre de publications correspond au nombre de publications autorisées par jour et non au nombre de contenus générés.
+L'expiration du test ne doit pas supprimer les données de l'utilisateur.
+21.2. Pack Starter
+•	Un agent IA.
+•	Une page Facebook.
+•	Jusqu'à quatorze publications par semaine.
+•	Modification des propositions de l'agent.
+21.3. Pack Pro
+•	Trois agents IA.
+•	Jusqu'à trois pages par agent.
+•	Jusqu'à vingt et une publications par semaine.
+•	Modification des propositions.
+•	Modification des prompts de génération des visuels.
+21.4. Pack Premium
+•	Nombre d'agents défini comme illimité.
+•	Nombre de pages par agent défini comme illimité.
+•	Publications sans plafond commercial prédéfini.
+•	Modification des propositions.
+•	Modification des prompts visuels.
+•	Personnalisation approfondie des compétences et instructions des agents.
+•	Configuration avancée de la qualité et des règles de production.
+Pour éviter les abus et les coûts imprévisibles, l'administration doit pouvoir définir des limites techniques de sécurité, des politiques d'utilisation raisonnable et des quotas internes de génération.
+Une limite technique ne doit pas être présentée comme un plafond commercial contractuel si elle n'est pas clairement définie.
+21.5. Gestion des packs
+L'administrateur peut :
+•	Créer un pack.
+•	Modifier un pack.
+•	Activer ou désactiver un pack.
+•	Définir son prix.
+•	Définir sa devise.
+•	Définir sa durée.
+•	Définir ses limites.
+•	Définir les fonctionnalités disponibles.
+•	Définir les limites d'utilisation de l'IA.
+•	Définir les modalités de renouvellement.
+•	Consulter les abonnements associés.
+Les modifications de packs ne doivent pas provoquer de corruption des abonnements existants.
+Définis une stratégie explicite de gestion des changements de forfait.
+21.6. Paiements
+Prévois une architecture permettant d'intégrer un fournisseur de paiement compatible avec les pays ciblés.
+Le système doit prendre en charge, selon le fournisseur choisi :
+•	Les demandes de souscription.
+•	Les changements de forfait.
+•	Les confirmations de paiement.
+•	Les renouvellements.
+•	Les échecs de paiement.
+•	Les annulations.
+•	Les webhooks signés.
+•	L'historique des transactions.
+Ne simule pas un paiement réussi.
+Si aucun fournisseur n'est configuré, affiche un mode de démonstration explicitement identifié ou une fonctionnalité indisponible.
+Ne conserve jamais les données complètes des cartes bancaires.
+22. FOURNISSEURS D'INTELLIGENCE ARTIFICIELLE
+Le super administrateur doit pouvoir configurer plusieurs fournisseurs d'IA.
+Prévois une architecture d'adaptation commune permettant de prendre en charge, selon les API disponibles :
+•	OpenAI.
+•	Google Gemini.
+•	xAI Grok.
+•	Ollama.
+•	D'autres fournisseurs compatibles.
+Chaque fournisseur doit être configurable indépendamment.
+Champs possibles :
+•	Nom.
+•	Fournisseur.
+•	URL de base.
+•	Clé API.
+•	Modèle.
+•	Statut.
+•	Capacités prises en charge.
+•	Limites.
+•	Priorité.
+•	Paramètres de génération.
+Les secrets doivent être chiffrés en base de données ou stockés dans un gestionnaire de secrets adapté.
+Les clés ne doivent pas apparaître dans les réponses API ou dans les journaux.
+22.1. Routage des requêtes
+Le système doit choisir un fournisseur compatible avec la tâche demandée.
+Exemples :
+•	Génération de texte.
+•	Analyse de contenu.
+•	Génération de calendrier.
+•	Analyse concurrentielle.
+•	Extraction d'informations.
+•	Génération d'images.
+•	Génération de vidéos.
+Ne considère pas qu'un fournisseur de texte est automatiquement capable de générer des images ou des vidéos.
+22.2. Gestion des erreurs
+Prévois :
+•	Les délais d'attente.
+•	Les limites de requêtes.
+•	Les erreurs d'authentification.
+•	Les erreurs de quota.
+•	Les indisponibilités.
+•	Les nouvelles tentatives contrôlées.
+•	La sélection d'un fournisseur de remplacement lorsque cela est compatible.
+Le système ne doit pas effectuer de bascule silencieuse vers un fournisseur entraînant des coûts ou un traitement des données inattendus.
+22.3. Coûts
+Enregistre les consommations disponibles :
+•	Utilisateur.
+•	Agent.
+•	Fournisseur.
+•	Modèle.
+•	Type de tâche.
+•	Date.
+•	Quantité consommée.
+•	Coût estimé, lorsque les données le permettent.
+Ces informations doivent permettre de contrôler la rentabilité des forfaits.
+23. EMAILS ET NOTIFICATIONS
+Prévois un système de notifications centralisé.
+L'administrateur doit pouvoir configurer le service d'envoi d'emails.
+Utilise SMTP ou un fournisseur transactionnel compatible.
+Les emails importants comprennent :
+•	Vérification du compte.
+•	Réinitialisation du mot de passe.
+•	Confirmation d'inscription.
+•	Calendrier généré.
+•	Contenus prêts à valider.
+•	Publication réussie.
+•	Échec de publication.
+•	Connexion sociale expirée.
+•	Alerte de quota.
+•	Confirmation de souscription.
+•	Confirmation de paiement, si applicable.
+•	Message de l'administration.
+Les notifications doivent pouvoir être activées ou désactivées par catégorie, sous réserve des emails nécessaires à la sécurité du compte.
+Les envois doivent être réalisés en arrière-plan lorsque cela est approprié.
+Enregistre le statut de chaque envoi et les erreurs.
+Ne considère pas un email comme envoyé si le fournisseur a rejeté la demande.
+24. MESSAGERIE ENTRE ADMINISTRATION ET UTILISATEURS
+Crée un système de messagerie intégré.
+Fonctionnalités :
+•	Liste des conversations.
+•	Création d'une conversation.
+•	Envoi de messages.
+•	Réception de messages.
+•	Historique.
+•	Horodatage.
+•	Statut de lecture.
+•	Notifications.
+•	Pièces jointes si nécessaire.
+•	Recherche.
+•	Archivage.
+Le terme « instantané » implique une mise à jour rapide de l'interface. Utilise un mécanisme adapté à l'infrastructure disponible, par exemple WebSocket ou interrogation périodique.
+Ne présente pas la messagerie comme du temps réel si elle n'utilise qu'un rafraîchissement manuel.
+Les utilisateurs ne doivent accéder qu'à leurs propres conversations.
+25. ESPACE D'ADMINISTRATION
+Crée les pages suivantes :
+1.	Tableau de bord administratif.
+2.	Gestion des utilisateurs.
+3.	Détails d'un utilisateur.
+4.	Gestion des agents.
+5.	Gestion des pages sociales connectées.
+6.	Gestion des abonnements.
+7.	Gestion des packs.
+8.	Gestion des fournisseurs d'IA.
+9.	Configuration des emails.
+10.	Configuration des paiements.
+11.	Gestion des langues.
+12.	Paramètres généraux.
+13.	Messagerie.
+14.	Journaux et erreurs.
+15.	Statistiques d'utilisation.
+16.	Surveillance des tâches planifiées.
+17.	Gestion des notifications système.
+Le tableau de bord administratif doit afficher les indicateurs réellement disponibles :
+•	Nombre d'utilisateurs.
+•	Nombre d'agents.
+•	Nombre de pages connectées.
+•	Nombre de publications.
+•	Répartition des abonnements.
+•	Consommation des fournisseurs d'IA.
+•	Tâches en attente.
+•	Échecs récents.
+•	État des intégrations.
+26. MODÈLE DE DONNÉES
+Conçois un schéma relationnel cohérent.
+Prévois au minimum les entités suivantes, avec leurs relations et contraintes :
+•	User.
+•	UserProfile.
+•	Session.
+•	PasswordResetToken.
+•	EmailVerificationToken.
+•	SubscriptionPlan.
+•	Subscription.
+•	SubscriptionUsage.
+•	Payment.
+•	AIProvider.
+•	AIModel.
+•	AIUsageLog.
+•	Agent.
+•	AgentSkill.
+•	AgentInstruction.
+•	AgentConfigurationVersion.
+•	SocialAccount.
+•	SocialPage.
+•	SocialConnection.
+•	AgentPageAssignment.
+•	BrandProfile.
+•	InspirationAsset.
+•	EditorialCalendar.
+•	EditorialCalendarItem.
+•	Campaign.
+•	Post.
+•	PostVersion.
+•	PostMedia.
+•	MediaAsset.
+•	PostApproval.
+•	ScheduledJob.
+•	PublicationAttempt.
+•	PublicationResult.
+•	Competitor.
+•	CompetitorAnalysis.
+•	TrendReport.
+•	PerformanceMetric.
+•	Recommendation.
+•	Notification.
+•	EmailLog.
+•	Conversation.
+•	ConversationParticipant.
+•	Message.
+•	SystemSetting.
+•	AuditLog.
+Tu peux adapter cette liste si nécessaire, à condition de préserver toutes les fonctionnalités.
+Définis :
+•	Les clés primaires.
+•	Les clés étrangères.
+•	Les index.
+•	Les contraintes d'unicité.
+•	Les règles de suppression.
+•	Les champs de création et de modification.
+•	Les statuts.
+•	Les relations avec le propriétaire.
+•	Les contraintes de tenant.
+Utilise des migrations versionnées.
+Ne crée pas une base de données uniquement constituée de données fictives.
+Les données de démonstration doivent être distinctes des données réelles.
+27. VARIABLES D'ENVIRONNEMENT
+Crée un fichier .env.example complet.
+Prévois les variables nécessaires, notamment :
+•	URL de l'application.
+•	Environnement.
+•	URL de la base de données.
+•	Secret de session.
+•	Clé de chiffrement des jetons.
+•	Configuration des fournisseurs d'IA.
+•	Configuration OAuth Meta.
+•	Configuration du stockage.
+•	Configuration SMTP.
+•	Configuration du système de tâches.
+•	Configuration du paiement.
+•	Configuration des journaux.
+Utilise des noms cohérents et documente chaque variable.
+Ne place aucune véritable clé API, aucun véritable mot de passe ni aucun secret personnel dans le dépôt.
+Fournis un mécanisme d'initialisation qui valide les variables requises au démarrage.
+Les intégrations facultatives doivent pouvoir rester désactivées sans empêcher les fonctions indépendantes de fonctionner.
+Les secrets de production doivent être injectés de manière sécurisée sur le serveur.
+Si un fichier .env de démonstration est fourni, il doit contenir uniquement des valeurs factices clairement identifiées.
+28. COMPTES DE DÉMONSTRATION
+Prévois un script d'initialisation permettant de créer :
+•	Un compte super administrateur de démonstration.
+•	Un compte utilisateur de démonstration.
+Les informations initiales doivent provenir de variables d'environnement ou d'une procédure de configuration sécurisée.
+N'inscris aucun mot de passe en clair dans le code source.
+Exige le changement des identifiants de démonstration avant la mise en production.
+Les comptes de démonstration ne doivent pas être créés automatiquement en production sans action explicite de l'administrateur.
+Le script doit être réexécutable sans créer de doublons ni réinitialiser des comptes existants de manière inattendue.
+29. SÉCURITÉ
+Applique les bonnes pratiques de sécurité pour une application SaaS multi-utilisateur.
+Prévois notamment :
+•	Authentification sécurisée.
+•	Autorisations côté serveur.
+•	Hachage des mots de passe.
+•	Protection contre les attaques par force brute.
+•	Validation des entrées.
+•	Protection contre les injections.
+•	Protection contre les accès non autorisés.
+•	Gestion sécurisée des cookies et sessions.
+•	Protection CSRF lorsque le mécanisme utilisé l'exige.
+•	Politique CORS restrictive.
+•	En-têtes de sécurité.
+•	Limitation des requêtes.
+•	Gestion sécurisée des fichiers téléversés.
+•	Vérification du type réel des fichiers.
+•	Limitation des tailles de fichiers.
+•	Protection contre les accès arbitraires aux URL lors des traitements serveur.
+•	Chiffrement des secrets.
+•	Rotation et révocation des jetons lorsque possible.
+•	Journalisation des actions sensibles.
+•	Politique de conservation des données.
+•	Procédures de suppression des comptes et des données.
+•	Sauvegardes.
+•	Restauration.
+•	Gestion des erreurs sans divulgation de secrets.
+Évite d'exposer les détails internes de l'application dans les messages d'erreur publics.
+Ne journalise jamais les mots de passe, jetons d'accès ou clés API.
+30. CONFORMITÉ ET GESTION DES DONNÉES
+Prévois les éléments nécessaires à une utilisation responsable :
+•	Conditions d'utilisation.
+•	Politique de confidentialité.
+•	Politique de conservation des données.
+•	Procédure de suppression du compte.
+•	Procédure de suppression des données.
+•	Informations sur les traitements par les fournisseurs d'IA.
+•	Consentement et autorisations nécessaires.
+•	Gestion des demandes des utilisateurs.
+Les documents juridiques doivent être présentés comme des modèles à faire vérifier et adapter, et non comme une garantie automatique de conformité.
+Pour Meta, implémente les mécanismes de suppression de données et les points de terminaison requis lorsque les API et les conditions applicables l'exigent.
+31. ACCESSIBILITÉ ET QUALITÉ UI/UX
+L'interface doit :
+•	Utiliser des composants accessibles.
+•	Permettre la navigation au clavier.
+•	Afficher des libellés explicites.
+•	Maintenir des contrastes suffisants.
+•	Présenter les erreurs de formulaire clairement.
+•	Éviter les animations excessives.
+•	Prévoir des confirmations pour les opérations sensibles.
+•	Conserver une cohérence visuelle entre les pages.
+•	Gérer les écrans de petite taille.
+•	Éviter les tableaux illisibles sur mobile.
+Prévois des composants réutilisables pour :
+•	Les boutons.
+•	Les champs.
+•	Les menus.
+•	Les dialogues.
+•	Les cartes.
+•	Les tableaux.
+•	Les notifications.
+•	Les aperçus de publication.
+•	Les calendriers.
+•	Les indicateurs de statut.
+32. TESTS OBLIGATOIRES
+Ne considère pas le projet terminé tant que les tests pertinents n'ont pas été exécutés.
+32.1. Tests unitaires
+Teste notamment :
+•	Les règles d'abonnement.
+•	Les permissions.
+•	Les transitions de statut.
+•	Les validations.
+•	Les quotas.
+•	Les calculs de dates.
+•	Les règles de publication.
+•	Les services de génération.
+32.2. Tests d'intégration
+Teste :
+•	L'authentification.
+•	Les accès à la base de données.
+•	Les routes API.
+•	Les autorisations.
+•	La création des agents.
+•	Les affectations.
+•	Les calendriers.
+•	Les validations de publication.
+•	Les tâches planifiées.
+•	Les notifications.
+32.3. Tests de bout en bout
+Simule des parcours complets :
+1.	Inscription d'un utilisateur.
+2.	Connexion.
+3.	Création d'un agent.
+4.	Configuration des compétences.
+5.	Création d'une page interne.
+6.	Association d'un agent.
+7.	Génération d'un calendrier.
+8.	Modification d'un créneau.
+9.	Génération d'un contenu.
+10.	Modification du texte.
+11.	Régénération du visuel.
+12.	Validation.
+13.	Programmation.
+14.	Exécution de la tâche.
+15.	Enregistrement du résultat.
+16.	Notification.
+Les tests utilisant les API externes doivent pouvoir utiliser des environnements de test ou des mocks explicites.
+Un test simulé ne prouve pas que l'intégration réelle fonctionne.
+32.4. Tests de sécurité
+Vérifie notamment :
+•	Les tentatives d'accès aux données d'un autre utilisateur.
+•	Les modifications d'identifiants dans les URL.
+•	Les accès aux routes administratives.
+•	Les tentatives de dépassement de quotas.
+•	Les téléversements de fichiers non autorisés.
+•	Les accès aux secrets.
+•	Les doubles exécutions de publication.
+•	Les tentatives de validation d'une publication appartenant à un autre utilisateur.
+32.5. Critères de réussite
+Le projet doit au minimum :
+•	Compiler sans erreur bloquante.
+•	Passer les contrôles de types.
+•	Passer les tests automatisés configurés.
+•	Démarrer dans l'environnement documenté.
+•	Appliquer les migrations.
+•	Fonctionner sans erreur sur les parcours essentiels.
+•	Présenter des erreurs explicites lorsque les services externes sont indisponibles.
+•	Ne pas divulguer les données d'un autre utilisateur.
+•	Respecter la règle de validation préalable des publications.
+Signale clairement les tests impossibles à exécuter.
+Ne masque pas les erreurs pour faire croire que le projet est fonctionnel.
+33. DOCUMENTATION ET DÉPLOIEMENT
+Crée un fichier README.md complet en français.
+Il doit expliquer :
+Déploiement local
+•	Les prérequis logiciels.
+•	L'installation des dépendances.
+•	La configuration des variables d'environnement.
+•	La création de la base de données.
+•	L'exécution des migrations.
+•	L'initialisation des données nécessaires.
+•	Le lancement du serveur.
+•	Le lancement des workers.
+•	La configuration des tâches planifiées.
+•	L'exécution des tests.
+•	Les commandes de développement.
+•	Les procédures de diagnostic.
+Déploiement sur serveur Linux
+•	Préparation du serveur.
+•	Installation des dépendances.
+•	Configuration de la base de données.
+•	Configuration HTTPS.
+•	Configuration du reverse proxy.
+•	Configuration du processus applicatif.
+•	Configuration des workers.
+•	Configuration des tâches planifiées.
+•	Configuration du stockage.
+•	Configuration des sauvegardes.
+•	Procédure de mise à jour.
+•	Procédure de restauration.
+Déploiement sur cPanel
+Décris les étapes selon les capacités réelles de l'hébergement :
+•	Vérifier la version de Node.js disponible.
+•	Vérifier les possibilités de connexion à PostgreSQL.
+•	Créer et configurer la base de données.
+•	Déployer les fichiers.
+•	Installer les dépendances.
+•	Configurer les variables d'environnement.
+•	Configurer l'application Node.js si cette fonctionnalité est disponible.
+•	Exécuter les migrations.
+•	Configurer les tâches cron.
+•	Configurer les emails.
+•	Configurer HTTPS.
+•	Tester les routes et les intégrations.
+•	Configurer les journaux.
+•	Documenter les limitations éventuelles.
+Si cPanel ne permet pas d'exécuter un worker permanent, propose une architecture compatible ou un service externe adapté.
+Ne prétends pas qu'un simple téléversement FTP suffit à faire fonctionner toutes les fonctions.
+Fichiers de déploiement
+Fournis, lorsque cela est pertinent :
+•	.env.example.
+•	README.md.
+•	Fichiers de configuration.
+•	Migrations.
+•	Scripts d'initialisation.
+•	Scripts de sauvegarde.
+•	Configuration du processus serveur.
+•	Configuration des tâches planifiées.
+•	Tests.
+•	Documentation des API.
+34. MÉTHODE DE RÉALISATION
+Développe le projet par phases.
+Phase 1 — Analyse et architecture
+•	Vérifier les exigences.
+•	Identifier les contraintes techniques.
+•	Définir l'architecture.
+•	Définir les modèles de données.
+•	Définir les rôles et permissions.
+•	Définir les intégrations externes.
+•	Identifier les dépendances et les risques.
+Phase 2 — Socle applicatif
+•	Initialiser le projet.
+•	Configurer les dépendances.
+•	Configurer la base de données.
+•	Mettre en place l'authentification.
+•	Mettre en place les permissions.
+•	Mettre en place les thèmes.
+•	Construire les composants de base.
+•	Créer le tableau de bord.
+Phase 3 — Gestion métier
+•	Gestion des agents.
+•	Configuration des compétences.
+•	Gestion des pages.
+•	Affectation des agents.
+•	Gestion des abonnements.
+•	Gestion des quotas.
+Phase 4 — Intelligence artificielle
+•	Couche d'abstraction des fournisseurs.
+•	Génération des calendriers.
+•	Génération des textes.
+•	Génération des visuels.
+•	Gestion de la galerie d'inspiration.
+•	Instructions des agents.
+•	Analyse des tendances.
+•	Analyse concurrentielle.
+Phase 5 — Publication et automatisation
+•	Intégrations Meta.
+•	Workflow de validation.
+•	Planification.
+•	Exécution des publications.
+•	Gestion des erreurs.
+•	Notifications.
+•	Historique.
+Phase 6 — Administration
+•	Gestion des utilisateurs.
+•	Gestion des packs.
+•	Configuration des fournisseurs.
+•	Gestion des emails.
+•	Messagerie.
+•	Journaux.
+•	Statistiques.
+Phase 7 — Vérification
+•	Exécuter les tests.
+•	Corriger les problèmes.
+•	Vérifier les autorisations.
+•	Vérifier les migrations.
+•	Vérifier les parcours.
+•	Vérifier le responsive design.
+•	Vérifier les thèmes.
+•	Vérifier les tâches planifiées.
+•	Documenter les fonctionnalités qui nécessitent une configuration externe.
+Phase 8 — Livraison
+Fournir :
+•	Le code source complet.
+•	Les migrations.
+•	Les fichiers de configuration.
+•	Les tests.
+•	Le fichier README.
+•	Les instructions de déploiement.
+•	Les variables d'environnement documentées.
+•	Les comptes de démonstration, initialisés de manière sécurisée.
+•	La liste des intégrations à configurer.
+•	Le rapport des tests réellement exécutés.
+•	Les limitations connues.
+35. RÈGLES FINALES
+Respecte impérativement les règles suivantes :
+1.	Ne produis pas uniquement une maquette.
+2.	Ne crée pas de boutons sans comportement.
+3.	Ne remplace pas les intégrations réelles par des simulations non signalées.
+4.	Ne présente pas une publication comme réussie sans confirmation du service de destination.
+5.	Ne publie jamais un contenu non approuvé.
+6.	Ne contourne pas les limites des abonnements.
+7.	Ne stocke jamais de secrets en clair dans le dépôt.
+8.	Ne donne jamais accès aux données d'un autre utilisateur.
+9.	Ne supprime pas les modifications approuvées sans avertissement.
+10.	Ne prétends pas qu'une intégration est opérationnelle sans l'avoir vérifiée.
+11.	N'utilise pas de données fictives dans les statistiques présentées comme réelles.
+12.	Documente les dépendances externes.
+13.	Privilégie un code maintenable plutôt qu'un code artificiellement compact.
+14.	Vérifie les versions et les API disponibles au moment de l'implémentation.
+15.	Corrige les erreurs découvertes pendant les tests.
+16.	Signale les contraintes techniques impossibles à satisfaire dans l'environnement cible.
+Commence par analyser les exigences et proposer une architecture cohérente.
+Ensuite, développe effectivement le projet dans l'environnement disponible.
+Si tu disposes d'un système de fichiers et d'un terminal, crée les fichiers du projet, installe les dépendances, configure les scripts, initialise la base de données lorsque cela est possible et exécute les tests.
+Si tu ne peux pas effectuer une opération faute d'accès ou de configuration externe, indique précisément ce qui manque et comment le compléter.
+Le résultat attendu est une application SaaS Meta Colab réellement exploitable, avec des fonctionnalités opérationnelles, une architecture sécurisée, une interface professionnelle, des intégrations documentées et une procédure de déploiement reproductible.
