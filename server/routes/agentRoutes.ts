@@ -28,9 +28,39 @@ router.get('/', requireAuth, (req: AuthenticatedRequest, res: Response) => {
   return res.json(populated);
 });
 
+// List agent templates (agents created by superadmins, available for users to base their domain on)
+router.get('/templates', requireAuth, (req: AuthenticatedRequest, res: Response) => {
+  const templates = db.agents
+    .filter((a) => a.status !== 'archived')
+    .map((a) => ({
+      id: a.id,
+      name: a.name,
+      businessDomain: a.businessDomain,
+      description: a.description,
+      tone: a.tone,
+      communicationStyle: a.communicationStyle,
+      targetAudience: a.targetAudience,
+      skills: a.skills,
+      avatarUrl: a.avatarUrl,
+    }));
+
+  return res.json(templates);
+});
+
 // Create new agent with quota validation
 router.post('/', requireAuth, checkPlanLimits('create_agent'), (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = req.body.userId || req.user!.id;
+
+  // Seul un superadmin peut créer un agent pour un autre utilisateur
+  if (req.body.userId && req.user!.role !== 'superadmin') {
+    return res.status(403).json({ error: 'Seul un super administrateur peut créer un agent pour un autre utilisateur.' });
+  }
+
+  const targetUser = db.users.find((u) => u.id === userId);
+  if (!targetUser) {
+    return res.status(404).json({ error: 'Utilisateur cible introuvable.' });
+  }
+
   const {
     name,
     avatarUrl,
@@ -69,7 +99,7 @@ router.post('/', requireAuth, checkPlanLimits('create_agent'), (req: Authenticat
     description: description || `Agent spécialisé en ${businessDomain}`,
     primaryGoal: primaryGoal || 'Accroître la visibilité et engager la communauté avec des publications régulières.',
     businessDomain: businessDomain.trim(),
-    associatedCompany: associatedCompany || req.user!.companyName,
+    associatedCompany: associatedCompany || targetUser.companyName,
     workingLanguage: workingLanguage === 'en' ? 'en' : 'fr',
     tone,
     communicationStyle,

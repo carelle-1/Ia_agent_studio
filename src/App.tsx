@@ -33,6 +33,12 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     if (user) {
       setIsAuthModalOpen(false);
+      // Rediriger l'administrateur vers la console admin dès la connexion
+      if (user?.role === 'superadmin') {
+        setCurrentView('admin');
+      } else {
+        setCurrentView('dashboard');
+      }
     } else {
       setIsAuthModalOpen(true);
       setCurrentView('dashboard');

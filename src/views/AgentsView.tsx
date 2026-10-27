@@ -6,16 +6,16 @@ import {
   Plus,
   Settings,
   Sparkles,
-  History,
-  FileText,
   Trash2,
   CheckCircle,
   AlertCircle,
   ArrowRight,
-  Shield, 
+  Shield,
   Layers,
   ChevronRight,
-  RotateCcw,
+  Edit,
+  Calendar as CalendarIcon,
+  Clock,
 } from 'lucide-react';
 
 export const AgentsView: React.FC = () => {
@@ -23,13 +23,24 @@ export const AgentsView: React.FC = () => {
   const { t } = useI18n();
 
   const [agents, setAgents] = useState<any[]>([]);
+  const [agentTemplates, setAgentTemplates] = useState<any[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<any | null>(null);
-  const [activeTab, setActiveTab] = useState<'details' | 'instructions' | 'versions'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'objectives' | 'business'>('details');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [newInstruction, setNewInstruction] = useState({ title: '', content: '', category: 'general' });
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [editingObjectiveIndex, setEditingObjectiveIndex] = useState<number | null>(null);
+  const [editObjectiveContent, setEditObjectiveContent] = useState('');
+
+  // Calendar generation from agent config
+  const [isGenCalendarOpen, setIsGenCalendarOpen] = useState(false);
+  const [genCalendarPageId, setGenCalendarPageId] = useState<string>('');
+  const [genCalendarFrequency, setGenCalendarFrequency] = useState(7);
+  const [genCalendarPages, setGenCalendarPages] = useState<any[]>([]);
+  const [isGeneratingCalendar, setIsGeneratingCalendar] = useState(false);
 
   // New Agent Form State
   const [formData, setFormData] = useState({
@@ -61,16 +72,25 @@ export const AgentsView: React.FC = () => {
     try {
       const token = localStorage.getItem('metacolab_token');
       if (!token) return;
-      const res = await fetch('/api/agents', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
+      const [agentsRes, templatesRes] = await Promise.all([
+        fetch('/api/agents', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch('/api/agents/templates', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+      if (agentsRes.ok) {
+        const data = await agentsRes.json();
         setAgents(data);
         if (selectedAgent) {
           const updated = data.find((a: any) => a.id === selectedAgent.id);
           if (updated) setSelectedAgent(updated);
         }
+      }
+      if (templatesRes.ok) {
+        const templates = await templatesRes.json();
+        setAgentTemplates(templates);
       }
     } catch (err) {
       console.error(err);
@@ -97,7 +117,7 @@ export const AgentsView: React.FC = () => {
     } catch (e) {
       setSelectedAgent(agent);
     }
-  };
+  }; 
 
   const handleCreateAgent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,6 +138,7 @@ export const AgentsView: React.FC = () => {
         return;
       }
       setIsCreateModalOpen(false);
+      setSelectedTemplateId('');
       setSuccessMsg(`L’agent ${data.name} a été créé avec succès !`);
       setTimeout(() => setSuccessMsg(''), 4000);
       fetchAgents();
@@ -126,49 +147,182 @@ export const AgentsView: React.FC = () => {
     }
   };
 
+  const handleTemplateSelect = (templateId: string) => {
+    const template = agentTemplates.find((t) => t.id === templateId);
+    if (!template) return;
+    setFormData((prev) => ({
+      ...prev,
+      businessDomain: template.businessDomain,
+      tone: template.tone || prev.tone,
+      communicationStyle: template.communicationStyle || prev.communicationStyle,
+      targetAudience: template.targetAudience || prev.targetAudience,
+      skills: template.skills?.length ? template.skills : prev.skills,
+    }));
+  };
+
   const handleAddInstruction = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedAgent || !newInstruction.title || !newInstruction.content) return;
+    if (!selectedAgent || !newInstruction.content) return;
     try {
       const token = localStorage.getItem('metacolab_token');
-      const res = await fetch(`/api/agents/${selectedAgent.id}/instructions`, {
-        method: 'POST',
+      const existingObjectives = selectedAgent.customInstructions ? selectedAgent.customInstructions.split('|').filter(Boolean) : [];
+
+      if (editingObjectiveIndex !== null) {
+        existingObjectives[editingObjectiveIndex] = newInstruction.content;
+        setEditingObjectiveIndex(null);
+        setEditObjectiveContent('');
+      } else {
+        existingObjectives.push(newInstruction.content);
+      }
+
+      setNewInstruction({ title: '', content: '', category: 'general' });
+
+      const res = await fetch(`/api/agents/${selectedAgent.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newInstruction),
+        body: JSON.stringify({
+          customInstructions: existingObjectives.join('|'),
+          reason: editingObjectiveIndex !== null ? 'Modification d’objectif' : 'Ajout d’objectif',
+        }),
       });
       if (res.ok) {
-        setNewInstruction({ title: '', content: '', category: 'general' });
-        handleOpenDetail(selectedAgent);
+        const updated = await res.json();
+        setSelectedAgent(updated.agent || updated);
+        fetchAgents();
       }
     } catch (e) {
       console.error(e);
     }
   };
 
-  const handleRollback = async (versionNumber: number) => {
+  const handleEditObjective = (idx: number, content: string) => {
+    setEditingObjectiveIndex(idx);
+    setEditObjectiveContent(content);
+    setNewInstruction((prev) => ({ ...prev, content }));
+  };
+
+  const handleDeleteObjective = async (idx: number) => {
     if (!selectedAgent) return;
-    if (!confirm(`Confirmez-vous la restauration de la configuration vers la version #${versionNumber} ?`)) return;
+    if (!confirm('Supprimer cet objectif ?')) return;
     try {
       const token = localStorage.getItem('metacolab_token');
-      const res = await fetch(`/api/agents/${selectedAgent.id}/rollback`, {
+      const existingObjectives = selectedAgent.customInstructions ? selectedAgent.customInstructions.split('|').filter(Boolean) : [];
+      existingObjectives.splice(idx, 1);
+
+      const res = await fetch(`/api/agents/${selectedAgent.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          customInstructions: existingObjectives.join('|'),
+          reason: 'Suppression d’objectif',
+        }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setSelectedAgent(updated.agent || updated);
+        fetchAgents();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Business info state
+  const [businessInfoForm, setBusinessInfoForm] = useState<any>(null);
+
+  const handleSaveBusinessInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAgent) return;
+    try {
+      const token = localStorage.getItem('metacolab_token');
+      const res = await fetch(`/api/agents/${selectedAgent.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          businessDomain: businessInfoForm.businessDomain,
+          associatedCompany: businessInfoForm.associatedCompany,
+          description: businessInfoForm.description,
+          targetAudience: businessInfoForm.targetAudience,
+          primaryGoal: businessInfoForm.primaryGoal,
+          reason: 'Modification des informations entreprise/produit',
+        }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setSelectedAgent(updated.agent || updated);
+        setBusinessInfoForm(null);
+        setSuccessMsg('Informations entreprise/produit enregistrées.');
+        setTimeout(() => setSuccessMsg(''), 4000);
+        fetchAgents();
+      }
+    } catch (e: any) {
+      setErrorMsg(e.message || 'Erreur réseau');
+    }
+  };
+
+  // Charger les pages sociales pour le sélecteur de génération de calendrier
+  const fetchGenCalendarPages = async () => {
+    try {
+      const token = localStorage.getItem('metacolab_token');
+      if (!token) return;
+      const res = await fetch('/api/social/pages', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const pages = await res.json();
+        setGenCalendarPages(pages);
+        if (pages.length > 0 && !genCalendarPageId) {
+          setGenCalendarPageId(pages[0].id);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const openGenCalendar = () => {
+    setIsGenCalendarOpen(true);
+    fetchGenCalendarPages();
+  };
+
+  const handleGenerateCalendarFromAgent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAgent) return;
+    setIsGeneratingCalendar(true);
+    try {
+      const token = localStorage.getItem('metacolab_token');
+      const res = await fetch('/api/calendars/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ versionNumber }),
+        body: JSON.stringify({
+          pageId: genCalendarPageId,
+          agentId: selectedAgent.id,
+          frequency: Number(genCalendarFrequency),
+        }),
       });
+      const data = await res.json();
       if (res.ok) {
-        setSuccessMsg(`Agent restauré à la version #${versionNumber}.`);
-        setTimeout(() => setSuccessMsg(''), 4000);
-        handleOpenDetail(selectedAgent);
+        setIsGenCalendarOpen(false);
+        setSuccessMsg(`Calendrier éditorial généré avec succès (${data.items.length} créneaux) basé sur la configuration de l'agent "${selectedAgent.name}" !`);
+        setTimeout(() => setSuccessMsg(''), 5000);
         fetchAgents();
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setIsGeneratingCalendar(false);
     }
   };
 
@@ -196,7 +350,11 @@ export const AgentsView: React.FC = () => {
         </div>
 
         <button
-          onClick={() => setIsCreateModalOpen(true)}
+          onClick={() => {
+            setSelectedTemplateId('');
+            setFormData((prev) => ({ ...prev, businessDomain: '' }));
+            setIsCreateModalOpen(true);
+          }}
           className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center space-x-2 self-start"
         >
           <Plus className="w-4 h-4" />
@@ -324,28 +482,28 @@ export const AgentsView: React.FC = () => {
                 Profil & Compétences
               </button>
               <button
-                onClick={() => setActiveTab('instructions')}
+                onClick={() => setActiveTab('objectives')}
                 className={`py-3 border-b-2 transition flex items-center space-x-1.5 ${
-                  activeTab === 'instructions'
+                  activeTab === 'objectives'
                     ? 'border-blue-600 text-brand dark:text-brand'
                     : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
               >
-                <span>Instructions Métier</span>
+                <span>Objectif</span>
                 <span className="px-1.5 py-0.2 rounded-full bg-brand-100 dark:bg-brand-900/60 text-[10px]">
-                  {selectedAgent.instructions?.length || 0}
+                  {selectedAgent.customInstructions ? selectedAgent.customInstructions.split('|').filter(Boolean).length : 0}
                 </span>
               </button>
               <button
-                onClick={() => setActiveTab('versions')}
+                onClick={() => setActiveTab('business')}
                 className={`py-3 border-b-2 transition flex items-center space-x-1.5 ${
-                  activeTab === 'versions'
+                  activeTab === 'business'
                     ? 'border-blue-600 text-brand dark:text-brand'
                     : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
               >
-                <History className="w-3.5 h-3.5" />
-                <span>Historique & Versions</span>
+                <Layers className="w-3.5 h-3.5" />
+                <span>Entreprise & Produit</span>
               </button>
             </div>
 
@@ -393,24 +551,42 @@ export const AgentsView: React.FC = () => {
                       <Shield className="w-3.5 h-3.5 text-warn-600" />
                       <span>Règles strictes & Limites de l’Agent</span>
                     </h4>
-                    <p className="text-warn-900 dark:text-warn-100 leading-relaxed">
-                      {selectedAgent.mandatoryRules || 'Validation humaine obligatoire avant toute publication.'}
-                    </p>
-                  </div>
+                  <p className="text-warn-900 dark:text-warn-100 leading-relaxed">
+                    {selectedAgent.mandatoryRules || 'Validation humaine obligatoire avant toute publication.'}
+                  </p>
                 </div>
-              )}
 
-              {activeTab === 'instructions' && (
+                {/* Générer calendrier éditorial depuis la config de l'agent */}
+                <div className="bg-brand-50 dark:bg-brand-950/30 border border-brand-100 dark:border-brand-900 p-3.5 rounded-xl">
+                  <h4 className="font-bold text-brand-900 dark:text-brand-100 mb-2 flex items-center space-x-1.5">
+                    <CalendarIcon className="w-3.5 h-3.5 text-brand-600" />
+                    <span>Calendrier Éditorial depuis cet Agent</span>
+                  </h4>
+                  <p className="text-brand-900 dark:text-brand-100 text-[11px] leading-relaxed mb-3">
+                    Générez une grille éditoriale hebdomadaire basée sur le domaine d’activité, le ton, la fréquence et les objectifs de cet agent.
+                  </p>
+                  <button
+                    onClick={openGenCalendar}
+                    className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center space-x-1.5"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Créer le Calendrier Éditorial</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+              {activeTab === 'objectives' && (
                 <div className="space-y-4">
-                  {/* Add Instruction Form */}
+                  {/* Add Objective Form */}
                   <form onSubmit={handleAddInstruction} className="p-4 bg-gray-50 dark:bg-zinc-800/60 rounded-2xl border border-gray-200 dark:border-zinc-800 space-y-3">
                     <h4 className="font-bold text-gray-900 dark:text-white text-xs">
-                      Ajouter une nouvelle consigne à l’agent
+                      Définir un nouvel objectif
                     </h4>
                     <div className="grid grid-cols-3 gap-2">
                       <input
                         type="text"
-                        placeholder="Titre (ex: Campagne Automne)"
+                        placeholder="Ex: Augmenter l'engagement de 20%"
                         value={newInstruction.title}
                         onChange={(e) => setNewInstruction({ ...newInstruction, title: e.target.value })}
                         className="col-span-2 px-3 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg text-xs"
@@ -421,14 +597,14 @@ export const AgentsView: React.FC = () => {
                         onChange={(e) => setNewInstruction({ ...newInstruction, category: e.target.value })}
                         className="px-3 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg text-xs"
                       >
-                        <option value="general">Générale persistante</option>
-                        <option value="campaign">Liée à une campagne</option>
-                        <option value="post">Relative à une publication</option>
-                        <option value="temporary">Temporaire</option>
+                        <option value="general">Objectif permanent</option>
+                        <option value="campaign">Objectif lié à une campagne</option>
+                        <option value="post">Objectif relatif à une publication</option>
+                        <option value="temporary">Objectif temporaire</option>
                       </select>
                     </div>
                     <textarea
-                      placeholder="Contenu exact de la consigne (ex: Toujours insister sur le Made in France et le label PEFC)..."
+                      placeholder="Contenu de l'objectif (ex: Augmenter le taux d'engagement des publications Instagram de 20% d'ici fin trimestre)..."
                       value={newInstruction.content}
                       onChange={(e) => setNewInstruction({ ...newInstruction, content: e.target.value })}
                       className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg text-xs h-20 resize-none"
@@ -438,68 +614,177 @@ export const AgentsView: React.FC = () => {
                       type="submit"
                       className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-lg transition"
                     >
-                      Ajouter l’instruction
+                      Enregistrer l'objectif
                     </button>
                   </form>
 
-                  {/* Instructions List */}
+                  {/* Objectives List */}
                   <div className="space-y-2">
-                    {selectedAgent.instructions?.map((inst: any) => (
-                      <div
-                        key={inst.id}
-                        className="p-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl flex items-start justify-between"
-                      >
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-bold text-gray-900 dark:text-white">{inst.title}</span>
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400">
-                              {inst.category}
-                            </span>
+                    {selectedAgent.customInstructions?.split('|').filter(Boolean).map((obj: string, idx: number) => {
+                      const isEditing = editingObjectiveIndex === idx;
+                      return (
+                        <div
+                          key={idx}
+                          className="p-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl flex items-start justify-between gap-3"
+                        >
+                          {isEditing ? (
+                            <div className="flex-1 min-w-0">
+                              <textarea
+                                value={editObjectiveContent}
+                                onChange={(e) => setEditObjectiveContent(e.target.value)}
+                                className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg text-xs h-20 resize-none mb-2"
+                              />
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setNewInstruction({ ...newInstruction, content: editObjectiveContent });
+                                    setEditingObjectiveIndex(null);
+                                    setEditObjectiveContent('');
+                                  }}
+                                  className="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-[10px] font-bold rounded-lg transition"
+                                >
+                                  Enregistrer
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingObjectiveIndex(null);
+                                    setEditObjectiveContent('');
+                                  }}
+                                  className="px-3 py-1.5 bg-gray-200 text-gray-700 text-[10px] font-bold rounded-lg hover:bg-gray-300 transition"
+                                >
+                                  Annuler
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div>
+                              <div className="flex items-center space-x-2">
+                                <span className="font-bold text-gray-900 dark:text-white">Objectif #{idx + 1}</span>
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400">
+                                  Permanent
+                                </span>
+                              </div>
+                              <p className="text-gray-600 dark:text-zinc-300 mt-1 leading-relaxed">
+                                {obj}
+                              </p>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleEditObjective(idx, obj)}
+                              className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs transition flex items-center justify-center"
+                              title="Modifier"
+                            >
+                              <Edit className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteObjective(idx)}
+                              className="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs transition flex items-center justify-center"
+                              title="Supprimer"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
                           </div>
-                          <p className="text-gray-600 dark:text-zinc-300 mt-1 leading-relaxed">
-                            {inst.content}
-                          </p>
                         </div>
+                      );
+                    })}
+                    {selectedAgent.customInstructions?.split('|').filter(Boolean).length === 0 && (
+                      <div className="p-4 bg-gray-50 dark:bg-zinc-800/60 rounded-xl text-center text-xs text-gray-500">
+                        Aucun objectif défini pour le moment.
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               )}
 
-              {activeTab === 'versions' && (
-                <div className="space-y-3">
-                  <div className="p-3 bg-brand-50 dark:bg-brand-950/30 border border-brand-100 dark:border-brand-900 rounded-xl text-brand-900 dark:text-brand-100 text-xs">
-                    Traçabilité complète : Chaque modification des compétences ou instructions génère un instantané permettant un retour arrière immédiat.
-                  </div>
-
-                  {selectedAgent.versions?.map((ver: any) => (
-                    <div
-                      key={ver.id}
-                      className="p-3.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl flex items-center justify-between"
-                    >
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <span className="font-bold text-gray-900 dark:text-white">
-                            Version #{ver.versionNumber}
-                          </span>
-                          <span className="text-[10px] text-gray-400">
-                            {new Date(ver.createdAt).toLocaleString()}
-                          </span>
+              {activeTab === 'business' && (
+                <div className="space-y-4">
+                  <div className="bg-white dark:bg-zinc-900 border rounded-2xl p-6 shadow-sm">
+                    <h4 className="font-bold text-gray-900 dark:text-white text-xs mb-4 uppercase tracking-wider">
+                      Informations Entreprise & Produit
+                    </h4>
+                    <form onSubmit={handleSaveBusinessInfo} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="font-semibold block mb-1 text-xs text-gray-500 dark:text-zinc-400">
+                            Domaine d'activité
+                          </label>
+                          <input
+                            type="text"
+                            value={businessInfoForm?.businessDomain || selectedAgent.businessDomain || ''}
+                            onChange={(e) =>
+                              setBusinessInfoForm((prev: any) => ({ ...prev, businessDomain: e.target.value }))
+                            }
+                            className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg text-xs"
+                          />
                         </div>
-                        <p className="text-gray-600 dark:text-zinc-400 text-xs mt-0.5">
-                          {ver.reason}
-                        </p>
+                        <div>
+                          <label className="font-semibold block mb-1 text-xs text-gray-500 dark:text-zinc-400">
+                            Entreprise / Marque
+                          </label>
+                          <input
+                            type="text"
+                            value={businessInfoForm?.associatedCompany || selectedAgent.associatedCompany || ''}
+                            onChange={(e) =>
+                              setBusinessInfoForm((prev: any) => ({ ...prev, associatedCompany: e.target.value }))
+                            }
+                            className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg text-xs"
+                          />
+                        </div>
                       </div>
-
+                      <div>
+                        <label className="font-semibold block mb-1 text-xs text-gray-500 dark:text-zinc-400">
+                          Description
+                        </label>
+                        <textarea
+                          value={businessInfoForm?.description || selectedAgent.description || ''}
+                          onChange={(e) =>
+                            setBusinessInfoForm((prev: any) => ({ ...prev, description: e.target.value }))
+                          }
+                          className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg text-xs h-24 resize-none"
+                          rows={4}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="font-semibold block mb-1 text-xs text-gray-500 dark:text-zinc-400">
+                            Public cible
+                          </label>
+                          <input
+                            type="text"
+                            value={businessInfoForm?.targetAudience || selectedAgent.targetAudience || ''}
+                            onChange={(e) =>
+                              setBusinessInfoForm((prev: any) => ({ ...prev, targetAudience: e.target.value }))
+                            }
+                            className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="font-semibold block mb-1 text-xs text-gray-500 dark:text-zinc-400">
+                            Objectif principal
+                          </label>
+                          <input
+                            type="text"
+                            value={businessInfoForm?.primaryGoal || selectedAgent.primaryGoal || ''}
+                            onChange={(e) =>
+                              setBusinessInfoForm((prev: any) => ({ ...prev, primaryGoal: e.target.value }))
+                            }
+                            className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg text-xs"
+                          />
+                        </div>
+                      </div>
                       <button
-                        onClick={() => handleRollback(ver.versionNumber)}
-                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-900 dark:text-white font-semibold text-xs rounded-lg transition flex items-center space-x-1"
+                        type="submit"
+                        className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-lg shadow-sm transition flex items-center justify-center gap-2"
                       >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        <span>Restaurer</span>
+                        Enregistrer les informations
                       </button>
-                    </div>
-                  ))}
+                    </form>
+                  </div>
                 </div>
               )}
             </div>
@@ -547,14 +832,27 @@ export const AgentsView: React.FC = () => {
                 </div>
                 <div>
                   <label className="font-semibold block mb-1">Domaine d’activité *</label>
-                  <input
-                    type="text"
+                  <select
                     required
-                    placeholder="Ex: Mode éthique, Mobilier, BTP"
-                    value={formData.businessDomain}
-                    onChange={(e) => setFormData({ ...formData, businessDomain: e.target.value })}
+                    value={selectedTemplateId}
+                    onChange={(e) => {
+                      setSelectedTemplateId(e.target.value);
+                      if (e.target.value) handleTemplateSelect(e.target.value);
+                    }}
                     className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 border rounded-xl"
-                  />
+                  >
+                    <option value="">Sélectionner un domaine d’activité…</option>
+                    {agentTemplates.map((tpl) => (
+                      <option key={tpl.id} value={tpl.id}>
+                        {tpl.name} — {tpl.businessDomain}
+                      </option>
+                    ))}
+                  </select>
+                  {agentTemplates.length === 0 && (
+                    <p className="text-[10px] text-gray-400 mt-1">
+                      Aucun modèle disponible pour le moment.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -616,6 +914,82 @@ export const AgentsView: React.FC = () => {
                   className="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-sm"
                 >
                   Créer l'agent
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Generate Calendar from Agent Config Modal */}
+      {isGenCalendarOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl w-full max-w-md p-6 shadow-2xl">
+            <h3 className="font-bold text-base text-gray-950 dark:text-white mb-1">
+              Calendrier Éditorial depuis "{selectedAgent?.name}"
+            </h3>
+            <p className="text-xs text-gray-500 mb-4">
+              La configuration de l’agent (domaine, ton, audience, objectifs) servira à bâtir une grille éditoriale cohérente.
+            </p>
+
+            <form onSubmit={handleGenerateCalendarFromAgent} className="space-y-4 text-xs">
+              <div>
+                <label className="font-semibold block mb-1">Page sociale cible *</label>
+                <select
+                  value={genCalendarPageId}
+                  onChange={(e) => setGenCalendarPageId(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 border rounded-xl"
+                  required
+                >
+                  {genCalendarPages.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.platform})
+                    </option>
+                  ))}
+                  {genCalendarPages.length === 0 && (
+                    <option disabled>
+                      Aucune page disponible
+                    </option>
+                  )}
+                </select>
+              </div>
+
+              <div>
+                <label className="font-semibold block mb-1">Fréquence de publication</label>
+                <select
+                  value={genCalendarFrequency}
+                  onChange={(e) => setGenCalendarFrequency(Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 border rounded-xl"
+                >
+                  <option value={3}>3 publications / semaine</option>
+                  <option value={5}>5 publications / semaine</option>
+                  <option value={7}>7 publications / semaine (1 par jour)</option>
+                </select>
+              </div>
+
+              <div className="p-3 bg-brand-50 dark:bg-brand-950/40 border border-brand-100 text-brand-900 dark:text-brand-100 rounded-xl text-[11px] leading-relaxed">
+                ✨ Les créneaux générés reprendront le domaine d’activité, le ton rédactionnel et les objectifs définis pour cet agent. Chaque publication sera soumise à votre validation avant mise en ligne.
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-2 border-t">
+                <button
+                  type="button"
+                  onClick={() => setIsGenCalendarOpen(false)}
+                  className="px-4 py-2 border rounded-xl font-semibold"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={isGeneratingCalendar}
+                  className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl flex items-center space-x-1.5"
+                >
+                  {isGeneratingCalendar ? (
+                    <Sparkles className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  <span>{isGeneratingCalendar ? 'Génération…' : 'Lancer la génération'}</span>
                 </button>
               </div>
             </form>
